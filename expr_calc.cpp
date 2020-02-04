@@ -20,6 +20,7 @@
 
 #define PI  3.14159265358979323846 // Mathematical constant pi.
 #define EXP 2.71828182845904523536 // Mathematical constant e.
+#define EPS 0.00000001
 
 const std::string DIGITS = "0123456789"; // Set of allowed digits.
 const std::string OPS = "+-*/()^"; // Set of allowed operators.
@@ -261,7 +262,13 @@ double EvaluateExpression(std::stack<std::string> main_stack) {
             if (curr == "+") eval_stack.push(first + second);
             else if (curr == "-") eval_stack.push(first - second);
             else if (curr == "*") eval_stack.push(first * second);
-            else if (curr == "/") eval_stack.push(first / second);
+            else if (curr == "/") {
+                if (second != 0) {
+                    eval_stack.push(first / second);
+                } else {
+                    ThrowError("Division by zero");
+                }
+            }
             else if (curr == "^") eval_stack.push(pow(first, second));
         } else if (FUNCTIONS.find(curr) != std::string::npos) {
             // Calculation of mathematical single argument functions.
@@ -269,8 +276,20 @@ double EvaluateExpression(std::stack<std::string> main_stack) {
             double value = eval_stack.top(); eval_stack.pop();
             if (curr == "sin") eval_stack.push(sin(value));
             else if (curr == "cos") eval_stack.push(cos(value));
-            else if (curr == "tan") eval_stack.push(tan(value));
-            else if (curr == "log") eval_stack.push(log(value));
+            else if (curr == "tan") { 
+                if (abs(value - PI/2) > EPS) {
+                    eval_stack.push(tan(value));
+                } else {
+                    ThrowError("Invalid tangent argument value");
+                }
+            }
+            else if (curr == "log") { 
+                if (value > 0) {
+                    eval_stack.push(log(value)); 
+                } else {
+                    ThrowError("Invalid logarithm argument value");
+                }
+            }
         } else {
             // Moving number onto evaluation stack.
             // Mathematical constants are replaced by their values.
